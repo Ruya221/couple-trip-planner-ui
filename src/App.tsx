@@ -11,6 +11,23 @@ const createId = () =>
     ? crypto.randomUUID()
     : `item-${Date.now()}-${Math.random().toString(16).slice(2)}`
 
+const parseLocalDateOnly = (value: string) => {
+  const [year, month, day] = value.split('-').map(Number)
+  return new Date(year, (month || 1) - 1, day || 1)
+}
+
+const parsePlannerDateTime = (value: string) => {
+  if (/Z$|[+-]\d{2}:\d{2}$/.test(value)) {
+    return new Date(value)
+  }
+
+  const [datePart, timePart = '00:00'] = value.split('T')
+  const [year, month, day] = datePart.split('-').map(Number)
+  const [hours, minutes] = timePart.split(':').map(Number)
+
+  return new Date(year, (month || 1) - 1, day || 1, hours || 0, minutes || 0)
+}
+
 const formatDateRange = (startDate: string, endDate: string) => {
   const formatter = new Intl.DateTimeFormat('ja-JP', {
     month: 'short',
@@ -18,7 +35,7 @@ const formatDateRange = (startDate: string, endDate: string) => {
     weekday: 'short',
   })
 
-  return `${formatter.format(new Date(startDate))} 〜 ${formatter.format(new Date(endDate))}`
+  return `${formatter.format(parseLocalDateOnly(startDate))} 〜 ${formatter.format(parseLocalDateOnly(endDate))}`
 }
 
 const formatDateTime = (value: string) =>
@@ -27,7 +44,7 @@ const formatDateTime = (value: string) =>
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(value))
+  }).format(parsePlannerDateTime(value))
 
 const createEmptyForm = () => ({
   title: '',
@@ -43,7 +60,7 @@ const buildDynamicReminders = (itinerary: ItineraryItem[]): MockReminder[] => {
 
   return itinerary
     .map((item) => {
-      const reminderAt = new Date(item.dateTime).getTime() - item.reminderMinutes * 60 * 1000
+      const reminderAt = parsePlannerDateTime(item.dateTime).getTime() - item.reminderMinutes * 60 * 1000
       const diffMinutes = Math.round((reminderAt - now) / 60000)
 
       if (diffMinutes < -180 || diffMinutes > 180) {
