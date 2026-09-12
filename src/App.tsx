@@ -79,6 +79,7 @@ function App() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiPlan, setAiPlan] = useState<MockAiPlan | null>(null)
   const aiTimerRef = useRef<number | null>(null)
+  const confirmDeleteButtonRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -107,6 +108,12 @@ function App() {
       window.clearTimeout(aiTimerRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    if (pendingDeleteId) {
+      confirmDeleteButtonRef.current?.focus()
+    }
+  }, [pendingDeleteId])
 
   const reminders = useMemo(() => {
     if (!planner) {
@@ -203,7 +210,10 @@ function App() {
   const handleAiSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (!aiDestination.trim()) {
+    const submittedDestination = aiDestination.trim()
+    const submittedQuestion = aiQuestion.trim()
+
+    if (!submittedDestination) {
       setAiMessage('行き先を入力してください。')
       setAiPlan(null)
       return
@@ -217,7 +227,7 @@ function App() {
     }
 
     aiTimerRef.current = window.setTimeout(() => {
-      setAiPlan(buildMockAiPlan(aiDestination, aiQuestion))
+      setAiPlan(buildMockAiPlan(submittedDestination, submittedQuestion))
       setAiLoading(false)
       aiTimerRef.current = null
     }, 150)
@@ -388,7 +398,12 @@ function App() {
                             <p id={confirmTitleId}>{item.title} を削除しますか？</p>
                             <p id={confirmDescriptionId}>削除すると、このデモ旅程一覧から項目が消えます。</p>
                             <div className="button-row">
-                              <button type="button" className="danger-button" onClick={() => handleDeleteItem(item.id)}>
+                              <button
+                                type="button"
+                                className="danger-button"
+                                ref={isConfirming ? confirmDeleteButtonRef : null}
+                                onClick={() => handleDeleteItem(item.id)}
+                              >
                                 削除を確定
                               </button>
                               <button
