@@ -1,0 +1,119 @@
+import { act, render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import App from './App'
+
+beforeEach(() => {
+  window.localStorage.clear()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+describe('App', () => {
+  it('renders the initial trip dashboard and sample itinerary', async () => {
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: '週末箱根リフレッシュ旅行' })).toBeInTheDocument()
+    expect(screen.getByText('箱根')).toBeInTheDocument()
+    expect(screen.getByText('ロマンスカーで新宿を出発')).toBeInTheDocument()
+  })
+
+  it('adds a new itinerary item', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await screen.findByRole('heading', { name: '週末箱根リフレッシュ旅行' })
+
+    await user.type(screen.getByLabelText('タイトル'), '美術館に立ち寄る')
+    await user.type(screen.getByLabelText('日時'), '2026-10-01T10:30')
+    await user.type(screen.getByLabelText('場所'), '彫刻の森美術館')
+    await user.selectOptions(screen.getByLabelText('カテゴリ'), '観光')
+    await user.type(screen.getByLabelText('メモ'), 'チケットを事前購入する')
+    await user.clear(screen.getByLabelText('リマインダー（分前）'))
+    await user.type(screen.getByLabelText('リマインダー（分前）'), '20')
+    await user.click(screen.getByRole('button', { name: '予定を保存' }))
+
+    expect(await screen.findByText('美術館に立ち寄る')).toBeInTheDocument()
+    expect(screen.getByText('旅程を追加しました。')).toBeInTheDocument()
+
+    const addedItem = screen.getByText('美術館に立ち寄る').closest('.timeline-content')
+    expect(addedItem).not.toBeNull()
+    expect(within(addedItem as HTMLElement).getByText(/10:30/)).toBeInTheDocument()
+  })
+
+  it('deletes an itinerary item after confirmation', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await screen.findByRole('heading', { name: '週末箱根リフレッシュ旅行' })
+
+    const item = screen.getByText('湖畔でご当地ランチ').closest('.timeline-content')
+    expect(item).not.toBeNull()
+
+    await user.click(within(item as HTMLElement).getByRole('button', { name: '削除する' }))
+    await user.click(screen.getByRole('button', { name: '削除を確定' }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('湖畔でご当地ランチ')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('旅程を削除しました。')).toBeInTheDocument()
+  })
+
+  it('shows an AI validation message when destination is empty', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await screen.findByRole('heading', { name: '週末箱根リフレッシュ旅行' })
+
+    await user.clear(screen.getByLabelText('行き先'))
+    await user.click(screen.getByRole('button', { name: 'モック提案を作成' }))
+
+    expect(screen.getByText('行き先を入力してください。')).toBeInTheDocument()
+    expect(screen.queryByLabelText('モックAI回答')).not.toBeInTheDocument()
+  })
+
+  it('shows the AI loading state while the mock response is pending', async () => {
+    vi.useFakeTimers()
+    render(<App />)
+
+    await act(async () => {
+      vi.advanceTimersByTime(0)
+    })
+
+    expect(screen.getByRole('heading', { name: '週末箱根リフレッシュ旅行' })).toBeInTheDocument()
+
+    await act(async () => {
+      screen.getByRole('button', { name: 'モック提案を作成' }).click()
+    })
+
+    expect(screen.getByRole('heading', { name: '提案を読み込み中' })).toBeInTheDocument()
+
+    await act(async () => {
+      vi.advanceTimersByTime(200)
+    })
+
+    expect(screen.getByRole('heading', { name: '箱根向けのモック旅行プラン' })).toBeInTheDocument()
+  })
+
+  it('shows a deterministic mock AI response', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await screen.findByRole('heading', { name: '週末箱根リフレッシュ旅行' })
+
+    await user.clear(screen.getByLabelText('行き先'))
+    await user.type(screen.getByLabelText('行き先'), '京都')
+    await user.clear(screen.getByLabelText('質問'))
+    await user.type(screen.getByLabelText('質問'), '静かなホテルを中心にしたいです。')
+    await user.click(screen.getByRole('button', { name: 'モック提案を作成' }))
+
+    expect(await screen.findByRole('heading', { name: '京都向けのモック旅行プラン' })).toBeInTheDocument()
+
+    const response = screen.getByLabelText('モックAI回答')
+    expect(within(response).getByText(/温泉宿を拠点にすると/)).toBeInTheDocument()
+    expect(within(response).getByText(/ご当地ランチ/)).toBeInTheDocument()
+    expect(within(response).getByText(/UI確認用のモックモード/)).toBeInTheDocument()
+  })
+})
