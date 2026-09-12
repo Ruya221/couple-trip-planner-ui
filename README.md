@@ -83,7 +83,7 @@ npm run build
   - `tsc -b && vite build` 成功
   - `dist/index.html 0.47 kB / gzip 0.31 kB`
   - `dist/assets/index-BTYV_KGI.css 6.27 kB / gzip 2.16 kB`
-  - `dist/assets/index-BGmwZmrD.js 237.02 kB / gzip 74.45 kB`
+  - `dist/assets/index-AuQqF_80.js 237.26 kB / gzip 74.51 kB`
 
 ## CI
 

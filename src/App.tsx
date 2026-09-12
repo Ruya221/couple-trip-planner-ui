@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { buildMockAiPlan, createDemoPlannerData, mockReminderExamples } from './mockData'
 import { loadPlannerData, resetPlannerData, savePlannerData, sortItinerary } from './storage'
@@ -77,6 +77,7 @@ function App() {
   const [aiMessage, setAiMessage] = useState<string | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiPlan, setAiPlan] = useState<MockAiPlan | null>(null)
+  const aiTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -98,6 +99,12 @@ function App() {
       savePlannerData(planner)
     }
   }, [planner, loading])
+
+  useEffect(() => () => {
+    if (aiTimerRef.current !== null) {
+      window.clearTimeout(aiTimerRef.current)
+    }
+  }, [])
 
   const reminders = useMemo(() => {
     if (!planner) {
@@ -131,7 +138,7 @@ function App() {
     const nextItem: ItineraryItem = {
       id: createId(),
       title: formValues.title.trim(),
-      dateTime: new Date(formValues.dateTime).toISOString(),
+      dateTime: formValues.dateTime,
       location: formValues.location.trim(),
       category: formValues.category,
       notes: formValues.notes.trim(),
@@ -203,9 +210,14 @@ function App() {
     setAiMessage(null)
     setAiLoading(true)
 
-    window.setTimeout(() => {
+    if (aiTimerRef.current !== null) {
+      window.clearTimeout(aiTimerRef.current)
+    }
+
+    aiTimerRef.current = window.setTimeout(() => {
       setAiPlan(buildMockAiPlan(aiDestination, aiQuestion))
       setAiLoading(false)
+      aiTimerRef.current = null
     }, 150)
   }
 

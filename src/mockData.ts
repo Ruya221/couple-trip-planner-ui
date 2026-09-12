@@ -9,11 +9,11 @@ const toDateOnly = (date: Date) => {
   return `${year}-${month}-${day}`
 }
 
-const toIsoAt = (baseDate: Date, dayOffset: number, hours: number, minutes: number) => {
+const toLocalDateTimeAt = (baseDate: Date, dayOffset: number, hours: number, minutes: number) => {
   const date = new Date(baseDate)
   date.setDate(date.getDate() + dayOffset)
   date.setHours(hours, minutes, 0, 0)
-  return date.toISOString()
+  return `${toDateOnly(date)}T${pad(hours)}:${pad(minutes)}`
 }
 
 const createItem = (
@@ -52,7 +52,7 @@ export const createDemoPlannerData = (now: Date = new Date()): PlannerData => {
       createItem(
         'demo-transport',
         'ロマンスカーで新宿を出発',
-        toIsoAt(tripStart, 0, 8, 30),
+        toLocalDateTimeAt(tripStart, 0, 8, 30),
         '新宿駅',
         '移動',
         '乗車前に特急券とモバイルSuicaを確認',
@@ -61,7 +61,7 @@ export const createDemoPlannerData = (now: Date = new Date()): PlannerData => {
       createItem(
         'demo-sightseeing',
         '箱根神社を散策',
-        toIsoAt(tripStart, 0, 11, 0),
+        toLocalDateTimeAt(tripStart, 0, 11, 0),
         '箱根神社',
         '観光',
         '鳥居で写真を撮る時間を確保',
@@ -70,7 +70,7 @@ export const createDemoPlannerData = (now: Date = new Date()): PlannerData => {
       createItem(
         'demo-meal',
         '湖畔でご当地ランチ',
-        toIsoAt(tripStart, 0, 13, 0),
+        toLocalDateTimeAt(tripStart, 0, 13, 0),
         '芦ノ湖エリア',
         '食事',
         '混雑しやすいので早めに到着',
@@ -79,7 +79,7 @@ export const createDemoPlannerData = (now: Date = new Date()): PlannerData => {
       createItem(
         'demo-hotel',
         '温泉旅館にチェックイン',
-        toIsoAt(tripStart, 0, 16, 0),
+        toLocalDateTimeAt(tripStart, 0, 16, 0),
         '箱根湯本',
         'ホテル',
         '夕食の時間と貸切風呂の予約を確認',

@@ -36,7 +36,13 @@ export const loadPlannerData = (): PlannerData => {
     return createDemoPlannerData()
   }
 
-  const parsed: unknown = JSON.parse(raw)
+  let parsed: unknown
+
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    throw new Error('Unable to parse planner data from localStorage')
+  }
 
   if (!isPlannerData(parsed)) {
     throw new Error('Invalid planner data in localStorage')

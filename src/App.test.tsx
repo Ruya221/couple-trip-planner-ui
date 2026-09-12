@@ -33,6 +33,10 @@ describe('App', () => {
 
     expect(await screen.findByText('美術館に立ち寄る')).toBeInTheDocument()
     expect(screen.getByText('旅程を追加しました。')).toBeInTheDocument()
+
+    const addedItem = screen.getByText('美術館に立ち寄る').closest('.timeline-content')
+    expect(addedItem).not.toBeNull()
+    expect(within(addedItem as HTMLElement).getByText(/10:30/)).toBeInTheDocument()
   })
 
   it('deletes an itinerary item after confirmation', async () => {
