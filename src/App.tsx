@@ -82,7 +82,7 @@ function App() {
   const confirmDeleteButtonRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
-    const timerId = window.setTimeout(() => {
+    const hydratePlanner = () => {
       try {
         setPlanner(loadPlannerData())
       } catch {
@@ -92,7 +92,14 @@ function App() {
         setHasHydrated(true)
         setLoading(false)
       }
-    }, 0)
+    }
+
+    if (typeof window === 'undefined') {
+      hydratePlanner()
+      return
+    }
+
+    const timerId = window.setTimeout(hydratePlanner, 0)
 
     return () => window.clearTimeout(timerId)
   }, [])
@@ -248,6 +255,7 @@ function App() {
             setPlanner(resetPlannerData())
             setStorageMessage('localStorage を初期化して、サンプルデータを再読み込みしました。')
             setFormMessage(null)
+            setPendingDeleteId(null)
           }}
         >
           デモを初期化

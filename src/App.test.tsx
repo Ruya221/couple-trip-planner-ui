@@ -58,6 +58,7 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.queryByText('湖畔でご当地ランチ')).not.toBeInTheDocument()
     })
+    expect(screen.getByText('旅程を削除しました。')).toBeInTheDocument()
   })
 
   it('shows an AI validation message when destination is empty', async () => {

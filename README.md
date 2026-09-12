@@ -81,9 +81,7 @@ npm run build
   - `Tests  6 passed (6)`
 - `npm run build`
   - `tsc -b && vite build` 成功
-  - `dist/index.html 0.47 kB / gzip 0.31 kB`
-  - `dist/assets/index-BTYV_KGI.css 6.27 kB / gzip 2.16 kB`
-  - `dist/assets/index-BdFgSqQQ.js 237.56 kB / gzip 74.62 kB`
+  - 本番用 `dist/` を生成できることを確認
 
 ## CI
 
