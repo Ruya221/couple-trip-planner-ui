@@ -78,12 +78,12 @@ npm run build
   - `oxlint` 実行、警告・エラーなし
 - `npm run test`
   - `Test Files  1 passed (1)`
-  - `Tests  4 passed (4)`
+  - `Tests  6 passed (6)`
 - `npm run build`
   - `tsc -b && vite build` 成功
   - `dist/index.html 0.47 kB / gzip 0.31 kB`
   - `dist/assets/index-BTYV_KGI.css 6.27 kB / gzip 2.16 kB`
-  - `dist/assets/index-AuQqF_80.js 237.26 kB / gzip 74.51 kB`
+  - `dist/assets/index-DWu07EXP.js 237.46 kB / gzip 74.58 kB`
 
 ## CI
 

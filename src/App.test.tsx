@@ -1,10 +1,14 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 beforeEach(() => {
   window.localStorage.clear()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 describe('App', () => {
@@ -54,6 +58,42 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.queryByText('湖畔でご当地ランチ')).not.toBeInTheDocument()
     })
+  })
+
+  it('shows an AI validation message when destination is empty', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await screen.findByRole('heading', { name: '週末箱根リフレッシュ旅行' })
+
+    await user.clear(screen.getByLabelText('行き先'))
+    await user.click(screen.getByRole('button', { name: 'モック提案を作成' }))
+
+    expect(screen.getByText('行き先を入力してください。')).toBeInTheDocument()
+    expect(screen.queryByLabelText('モックAI回答')).not.toBeInTheDocument()
+  })
+
+  it('shows the AI loading state while the mock response is pending', async () => {
+    vi.useFakeTimers()
+    render(<App />)
+
+    await act(async () => {
+      vi.advanceTimersByTime(0)
+    })
+
+    expect(screen.getByRole('heading', { name: '週末箱根リフレッシュ旅行' })).toBeInTheDocument()
+
+    await act(async () => {
+      screen.getByRole('button', { name: 'モック提案を作成' }).click()
+    })
+
+    expect(screen.getByRole('heading', { name: '提案を読み込み中' })).toBeInTheDocument()
+
+    await act(async () => {
+      vi.advanceTimersByTime(200)
+    })
+
+    expect(screen.getByRole('heading', { name: '箱根向けのモック旅行プラン' })).toBeInTheDocument()
   })
 
   it('shows a deterministic mock AI response', async () => {

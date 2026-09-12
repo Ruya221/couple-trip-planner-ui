@@ -65,6 +65,7 @@ function App() {
   const [planner, setPlanner] = useState<PlannerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [storageMessage, setStorageMessage] = useState<string | null>(null)
+  const [hasHydrated, setHasHydrated] = useState(false)
   const [formValues, setFormValues] = useState(createEmptyForm)
   const [formMessage, setFormMessage] = useState<string | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
@@ -87,6 +88,7 @@ function App() {
         setStorageMessage('保存データの読み込みに失敗したため、デモ用サンプルデータに戻しました。')
         setPlanner(createDemoPlannerData())
       } finally {
+        setHasHydrated(true)
         setLoading(false)
       }
     }, 0)
@@ -95,10 +97,10 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!loading && planner) {
+    if (!loading && hasHydrated && planner) {
       savePlannerData(planner)
     }
-  }, [planner, loading])
+  }, [planner, loading, hasHydrated])
 
   useEffect(() => () => {
     if (aiTimerRef.current !== null) {
@@ -359,6 +361,8 @@ function App() {
               <ol className="timeline-list">
                 {planner.itinerary.map((item) => {
                   const isConfirming = pendingDeleteId === item.id
+                  const confirmTitleId = `confirm-title-${item.id}`
+                  const confirmDescriptionId = `confirm-description-${item.id}`
 
                   return (
                     <li key={item.id} className="timeline-item">
@@ -375,8 +379,14 @@ function App() {
                         <p className="item-notes">{item.notes || 'メモは未入力です。'}</p>
                         <p className="item-reminder">{item.reminderMinutes}分前に通知</p>
                         {isConfirming ? (
-                          <div className="confirm-box" role="alertdialog" aria-label={`${item.title} を削除しますか`}>
-                            <p>この予定を削除しますか？</p>
+                          <div
+                            className="confirm-box"
+                            role="group"
+                            aria-labelledby={confirmTitleId}
+                            aria-describedby={confirmDescriptionId}
+                          >
+                            <p id={confirmTitleId}>{item.title} を削除しますか？</p>
+                            <p id={confirmDescriptionId}>削除すると、このデモ旅程一覧から項目が消えます。</p>
                             <div className="button-row">
                               <button type="button" className="danger-button" onClick={() => handleDeleteItem(item.id)}>
                                 削除を確定
