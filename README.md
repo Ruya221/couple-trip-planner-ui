@@ -62,6 +62,29 @@ couple-trip-planner-ui-demo
   - このリポジトリ
   - UI と操作感をすぐ確認するための公開デモ
 
+
+## Vercel デプロイ
+
+このリポジトリは Vercel へそのままデプロイできます。`vercel.json` で以下を固定しています。
+
+- Install Command: `npm ci`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+### Vercel での設定手順
+
+1. Vercel で `Ruya221/couple-trip-planner-ui` を Import
+2. Framework Preset は **Vite** のままでOK
+3. Build & Output Settings は `vercel.json` の内容を使用
+4. Environment Variables は **不要**
+5. Deploy を実行
+
+### デプロイ後の確認ポイント
+
+- スマホから公開URLを開いて画面確認できる
+- localStorage により端末ごとにデモデータが保存される
+- バックエンドや API キーなしで動作する
+
 ## テスト・ビルド実行結果
 
 以下のコマンドをローカルで実行し、成功を確認しました。
